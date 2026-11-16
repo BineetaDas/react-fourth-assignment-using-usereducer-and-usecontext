@@ -3,9 +3,7 @@ import axios from "axios";
 
 import api from "../api";
 
-import type {
-  ProductResponse,
-} from "../../types/interface/cart.interface";
+import type { ProductResponse } from "../../types/interface/cart.interface";
 
 export const getProducts = async (): Promise<ProductResponse> => {
   try {

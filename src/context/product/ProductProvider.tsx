@@ -1,14 +1,10 @@
-
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 
 import { ProductContext } from "./ProductContext";
-
 import { getProducts } from "../../api/api-functions/cart-function";
 
-import type {
-  ProductState,
-} from "../../types/interface/product.interface";
+import type { ProductState } from "../../types/interface/product.interface";
 
 const ProductInitialState: ProductState = {
   products: [],
@@ -23,13 +19,11 @@ interface ProductProviderProps {
   children: ReactNode;
 }
 
-const ProductProvider = ({
-  children,
-}: ProductProviderProps) => {
+const ProductProvider = ({ children }: ProductProviderProps) => {
   const [productState, setProductState] =
     useState<ProductState>(ProductInitialState);
 
-  const fetchProducts = async () => {
+  const fetchProducts = async (isActive = () => true) => {
     try {
       setProductState((prevState) => ({
         ...prevState,
@@ -41,6 +35,8 @@ const ProductProvider = ({
 
       console.log("Product API Response:", response);
 
+      if (!isActive()) return;
+
       setProductState({
         products: response.products,
         total: response.total,
@@ -50,15 +46,15 @@ const ProductProvider = ({
         isError: null,
       });
     } catch (error) {
+      if (!isActive()) return;
+
       console.log("Product Fetch Error:", error);
 
       setProductState((prevState) => ({
         ...prevState,
         isLoading: false,
         isError:
-          error instanceof Error
-            ? error.message
-            : "Something went wrong",
+          error instanceof Error ? error.message : "Something went wrong",
       }));
     }
   };
@@ -66,39 +62,7 @@ const ProductProvider = ({
   useEffect(() => {
     let ignore = false;
 
-    const loadProducts = async () => {
-      try {
-        const response = await getProducts();
-
-        console.log("Product API Response:", response);
-
-        if (!ignore) {
-          setProductState({
-            products: response.products,
-            total: response.total,
-            skip: response.skip,
-            limit: response.limit,
-            isLoading: false,
-            isError: null,
-          });
-        }
-      } catch (error) {
-        console.log("Product Fetch Error:", error);
-
-        if (!ignore) {
-          setProductState((prevState) => ({
-            ...prevState,
-            isLoading: false,
-            isError:
-              error instanceof Error
-                ? error.message
-                : "Something went wrong",
-          }));
-        }
-      }
-    };
-
-    void loadProducts();
+    void fetchProducts(() => !ignore);
 
     return () => {
       ignore = true;
@@ -109,7 +73,7 @@ const ProductProvider = ({
     <ProductContext.Provider
       value={{
         ...productState,
-        fetchProducts,
+        fetchProducts: () => fetchProducts(),
       }}
     >
       {children}
