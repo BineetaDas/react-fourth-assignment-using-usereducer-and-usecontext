@@ -11,7 +11,7 @@ const Home: React.FC = () => {
           </h1>
 
           <p className="mt-3 text-sm text-slate-500">
-            Choose an assignment to get started.
+            Choose a task to begin.
           </p>
         </div>
 
